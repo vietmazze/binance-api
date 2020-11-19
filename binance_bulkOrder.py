@@ -20,6 +20,6 @@ logging.basicConfig(level=logging.INFO, format=(
 
 
 class BinanceClient:
-    _ENDPOINT = ""
+    _ENDPOINT = 'https://api.binance.com'
 
     def __init__(self):
