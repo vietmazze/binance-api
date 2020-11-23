@@ -29,10 +29,10 @@ class BinanceClient:
     ############################
         # -PLACE ORDER
     ############################
-    def create_order(self, **params) -> None:
+    def create_order(self, **kwargs) -> None:
 
         try:
-            result = self.client.futures_create_order(**params)
+            result = self.client.futures_create_order(**kwargs)
             # result["origType"]
             # result["avgPrice"]
             # result["origQty"]
@@ -44,19 +44,18 @@ class BinanceClient:
                             f'--- market:{result["symbol"]}'
                             f'size: {result["origQty"]}'
                             f'price: { result["avgPrice"]}'
-                            f'side: {result["side"]}"
+                            f'side: {result["side"]}'
                             f'reduceOnly: {result["reduceOnly"]}'))
 
         except Exception as e:
-            self.log.red(f'Failed to create order for order: {**params}')
+            self.log.red(f'Failed to create order for order: {kwargs}')
 
     ############################
         # -PLACE CONDITIONAL ORDER
     ############################
-    def create_conditional_order(self, **params) -> None:
+    def create_conditional_order(self, **kwargs) -> None:
         try:
-            result = self.client.futures_create_order(**params)
-
+            result = self.client.futures_create_order(**kwargs)
             self.log.green((f'{result["origType"]} order'
                             f'--- market:{result["symbol"]}'
                             f'size: {result["origQty"]}'
@@ -65,7 +64,7 @@ class BinanceClient:
                             f'reduceOnly: {result["reduceOnly"])'))
 
         except Exception as e:
-            self.log.red(f'Failed to create order for order: {**params} -- {e}')
+            self.log.red(f'Failed to create order for order: {kwargs} -- {e}')
         ############################
         # -CANCEL ORDERS
         ############################
@@ -150,4 +149,12 @@ class BinanceClient:
         # -ORDER CLEANUP
         ###############################
 
-    def place_order_cleanup(self, currCommand):
+
+def _get_time_offset(self):
+    res = self.b.get_server_time()
+    return res['serverTime'] - int(time.time() * 1000)
+
+
+def synced(self, fn_name, **args):
+    args['timestamp'] = int(time.time() - self.time_offset)
+    return getattr(self.b, fn_name)(**args)

@@ -80,7 +80,7 @@ data = {"symbol": "BTCUSDT",
   'isolatedMargin': '0.00000000',
   'isAutoAddMargin': 'false',
   'positionSide': 'BOTH'}]
-
+*client.futures_position_information(symbol="AAVEUSDT")
 
 -GET OPEN ORDERS FOR SPECIFIC SYMBOL
 [{'orderId': 9293682339,
@@ -133,4 +133,9 @@ data = {"symbol": "BTCUSDT",
 {'code': 200, 'msg': 'The operation of cancel all open order is done.'}
 data = {"symbol":"BTCUSDT"}
 *client.futures_cancel_all_open_orders(**data)
+
+
+
+
 """
+
