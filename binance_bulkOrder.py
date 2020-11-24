@@ -33,19 +33,12 @@ class BinanceClient:
 
         try:
             result = self.client.futures_create_order(**kwargs)
-            # result["origType"]
-            # result["avgPrice"]
-            # result["origQty"]
-            # result["symbol"]
-            # result["reduceOnly"]
-            # result["side"]
-
-            self.log.green((f'{result["origType"]} order'
-                            f'--- market:{result["symbol"]}'
-                            f'size: {result["origQty"]}'
-                            f'price: { result["avgPrice"]}'
-                            f'side: {result["side"]}'
-                            f'reduceOnly: {result["reduceOnly"]}'))
+            self.log.green((f'{result["origType"]}:'
+                            f'{result["symbol"]}, '
+                            f'size:{result["origQty"]}, '
+                            f'price:{ result["price"]}, '
+                            f'side:{result["side"]}, '
+                            f'reduceOnly:{result["reduceOnly"]} '))
 
         except Exception as e:
             self.log.red(f'Failed to create order for order: {kwargs}')
@@ -56,12 +49,13 @@ class BinanceClient:
     def create_conditional_order(self, **kwargs) -> None:
         try:
             result = self.client.futures_create_order(**kwargs)
-            self.log.green((f'{result["origType"]} order'
-                            f'--- market:{result["symbol"]}'
-                            f'size: {result["origQty"]}'
-                            f'price: {result["stopPrice"]}'
-                            f'side: {result["side"]}'
-                            f'reduceOnly: {result["reduceOnly"])'))
+
+            self.log.green((f'{result["origType"]}:'
+                            f'{result["symbol"]}, '
+                            f'size:{result["origQty"]}, '
+                            f'price:{ result["stopPrice"]}, '
+                            f'side:{result["side"]},'
+                            f'reduceOnly:{result["reduceOnly"]}'))
 
         except Exception as e:
             self.log.red(f'Failed to create order for order: {kwargs} -- {e}')
@@ -80,16 +74,16 @@ class BinanceClient:
 
     def cancel_order(self, orderId) -> None:
         data = {"symbol": self.market,
-                "orderId": orderId}
+                "orderId": float(orderId)}  # make sure this is float
         try:
-            result = self.client.futures_cancel_order(self, **data)
+            result = self.client.futures_cancel_order(**data)
             self.log.green((f'CANCEL ORDER ---'
-                            f'type: {result["type"]}'
-                            f'symbol: {result["symbol"]}'
+                            f'type: {result["type"]} '
+                            f'symbol: {result["symbol"]} '
                             f'qty: {result["origQty"]}'
                             ))
         except Exception as e:
-            self.log.red(f'Failed to cancel_order {orderId}-- {e}')
+            self.log.red(f'Failed to cancel_order {orderId} -- {e}')
 
         ############################
         # -GET OPEN ORDERS
@@ -99,51 +93,56 @@ class BinanceClient:
         try:
             results = self.client.futures_get_open_orders(symbol=self.market)
             for result in results:
-                self.log.green((f'{result["origType"]} order'
-                                f'--- market:{result["symbol"]}'
-                                f'size: {result["origQty"]}'
-                                f'price: {result["stopPrice"]}'
-                                f'side: {result["side"]}'
-                                f'reduceOnly: {result["reduceOnly"]}'))
+                self.log.green((f'{result["origType"]}:'
+                                f'{result["symbol"]} '
+                                f'size:{result["origQty"]} '
+                                f'price:{result["stopPrice"]} '
+                                f'side:{result["side"]} '
+                                f'reduceOnly:{result["reduceOnly"]} '
+                                f'orderID:{result["orderId"]}'))
         except Exception as e:
-            pass
+            self.log.red(
+                f'Unable to get_open_orders for current market : {self.market}')
 
         ############################
         # -GET POSITION
         ############################
 
-    def get_positions(self, show_avg_price: bool = False) -> List[dict]:
-        try:
-            return self.client.futures_position_information()
-
-        except expression as identifier:
-            self.log.red(f'Unable to get positions information')
-
-    def get_position(self, name: str) -> dict:
-        try:
-            if name:
-                try:
-                    result = next(filter(lambda x: x["symbol"] name.upper(), self.get_positions()), None)
-                    self.log.green((f'Current POSITION:'
-                                    f'symbol: {result["symbol"]}'
-                                    f'entryPrice: {result["entryPrice"]}'
-                                    f'liquidation: {result["liquidationPrice"]}'
-                                    f'side: {result["positionSide"]}'
-                                    f'size: {result["positionAmt"]}'
-                                    f'unPNL: {result["unRealizedProfit"]}'))
+    def get_position(self, symbol: str = None) -> dict:
+         try:
+            if symbol:
+                results = self.client.futures_position_information(
+                    symbol=symbol)
+                result = results[0]
+                entryPrice = round(float(result["entryPrice"]), 2)
+                liquidation = round(float(result["liquidationPrice"]), 2)
+                unPNL = round(float(result["unRealizedProfit"]), 2)
+                self.log.green((f'POSITION:'
+                                f'{result["symbol"]} '
+                                f'entryPrice:{entryPrice} '
+                                f'liquidation:{liquidation} '
+                                f'side:{result["positionSide"]} '
+                                f'size:{result["positionAmt"]} '
+                                f'unPNL:{unPNL} '))
             else:
-                results = self.get_positions()
+                results = self.client.futures_position_information()
                 for result in results:
-                    self.log.green((f'Current POSITION:'
-                                    f'symbol: {result["symbol"]}'
-                                    f'entryPrice: {result["entryPrice"]}'
-                                    f'liquidation: {result["liquidationPrice"]}'
-                                    f'side: {result["positionSide"]}'
-                                    f'size: {result["positionAmt"]}'
-                                    f'unPNL: {result["unRealizedProfit"]}'))
+                    if float(result['positionAmt']) > 0:
+                        entryPrice = round(float(result["entryPrice"]), 2)
+                        liquidation = round(
+                            float(result["liquidationPrice"]), 2)
+                        unPNL = round(float(result["unRealizedProfit"]), 2)
+                        self.log.green((f'POSITION:'
+                                        f'{result["symbol"]} '
+                                        f'entryPrice:{entryPrice} '
+                                        f'liquidation:{liquidation} '
+                                        f'side:{result["positionSide"]} '
+                                        f'size:{result["positionAmt"]} '
+                                        f'unPNL:{unPNL}'))
         except Exception as e:
             self.log.red(
                 f'Unable to fetch get_position, please check your input -- {e}')
+
 
         ##############################
         # -ORDER CLEANUP
