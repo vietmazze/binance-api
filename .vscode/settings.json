@@ -1,3 +1,4 @@
 {
-  "python.pythonPath": "C:\\Users\\BITCOIN005\\envs\\py1\\Scripts\\python.exe"
+  "python.pythonPath": "C:\\Users\\BITCOIN005\\envs\\py1\\Scripts\\python.exe",
+  "python.formatting.provider": "black"
 }
