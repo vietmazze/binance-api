@@ -30,9 +30,14 @@ def process_command(binance, userInput):
         currCommand = commands.popleft().split(" ")
         try:
             ######################
+            # -GET BALANCE
+            ######################
+            if currCommand[0] == "balance":
+                binance.get_balance()
+            ######################
             # -PLACING ORDER
             ######################
-            if currCommand[0] == "buy" or currCommand[0] == "sell":
+            elif currCommand[0] == "buy" or currCommand[0] == "sell":
                 binance.place_order_cleanup(currCommand)
 
             ######################
@@ -62,7 +67,7 @@ def process_command(binance, userInput):
 
                 if binance.market is not None:
                     if conditional_id and conditional_id.isnumeric():
-                        binance.cancel_order(orderId=conditional_id)
+                        binance.cancel_order(conditional_id)
                     else:
                         binance.cancel_all_orders()
                 else:
@@ -115,7 +120,8 @@ def process_command(binance, userInput):
                     limitOrder = currCommand[9] if len(currCommand) > 9 else None
                     if len(currCommand) > 8:
                         order_list = split_equal_parts(start, end, total)
-                        size = float(size) / total
+                        size = round(float(size) / total, 2)
+
                         cp.green(order_list)
                         if not None in (side, size, total, start, end):
 

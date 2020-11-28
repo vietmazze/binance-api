@@ -4,6 +4,7 @@ import datetime
 import time
 import collections
 
+from decimal import *
 from binance.client import Client
 from typing import Optional, Dict, Any, List
 from colorprint import ColorPrint
@@ -86,9 +87,10 @@ class BinanceClient:
 
     def cancel_order(self, orderId) -> None:
         data = {
-            "symbol": self.market,
-            "orderId": float(orderId),
-        }  # make sure this is float
+            "symbol": self.market.upper(),
+            "orderId": orderId,
+        }
+        self.log.red(data)
         try:
             result = self.client.futures_cancel_order(**data)
             self.log.green(
@@ -209,7 +211,7 @@ class BinanceClient:
                     "quantity": float(size) if size else None,
                 }
 
-            self.log.green(data)
+            # self.log.green(data)
             if size:
                 if float(size) < float(self.fatFinger):
                     self.create_order(**data)
@@ -284,7 +286,7 @@ class BinanceClient:
                     "stopPrice": float(price) if price else None,
                     "reduceOnly": True,
                 }
-            self.log.green(data)
+            # self.log.green(data)
             if size and float(size) < float(self.fatFinger):
                 if price:
                     self.create_conditional_order(**data)
@@ -298,6 +300,23 @@ class BinanceClient:
                 )
         except Exception as e:
             self.log.red(f"Error in place_conditional_order_cleanup: {e}")
+
+    ##############################
+    # -ORDER CLEANUP
+    ###############################
+    def get_balance(self):
+        results = self.client.futures_account_balance()
+        for result in results:
+            if result["asset"] == "USDT":
+                # if result["crossUnPnl"]:
+                #     self.log.green(
+                #         (
+                #             f'balance:{result["balance"]}\n'
+                #             f'unPNL:{result["crossUnPnl"]}\n'
+                #         )
+                #     )
+                # else:
+                self.log.green(f'balance:{result["balance"]}')
 
 
 def _get_time_offset(self):
