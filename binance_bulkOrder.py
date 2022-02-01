@@ -22,8 +22,8 @@ logging.basicConfig(
 
 class BinanceClient:
     def __init__(self) -> None:
-        self._api_key = os.getenv("BINANCE_TEST_API")
-        self._api_secret = os.getenv("BINANCE_TEST_SECRET")
+        self._api_key = os.getenv("")
+        self._api_secret = os.getenv("")
         self.client = Client(self._api_key, self._api_secret)
         self.log = ColorPrint()
         self.market = None
